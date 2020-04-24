@@ -11,10 +11,10 @@ Vue.component('app-header', {
               <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
                   <li class="nav-item active">
-                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                    <router-link to="/" class="nav-link">Home</router-link>
                   </li>
                   <li class="nav-item">
-                    <a class="nav-link" href="#">News</a>
+                    <router-link to="/news" class="nav-link">News</router-link>
                   </li>
                 </ul>
               </div>
@@ -41,28 +41,41 @@ Vue.component('app-footer', {
     }
 })
 
-Vue.component('news-list',{
+const NewsList = Vue.component('news-list',{
   template:`
       <div class="news">
-        <h2>News</h2>
-        <ul class="news__list">
+        <h2 class = "text-center">News</h2>
+        <div class="form-inline d-flex justify-content-center">
+          <div class="form-group mx-sm-3 mb-2">
+            <label class="sr-only" for="search">Search</label>
+            <input type="search" name="search" v-model="searchTerm"id="search" class="form-control mb-2 mr-sm-2" placeholder="Enter search term here" />
+            <p>You are searching for <b>{{ searchTerm }}</b></p>
+          </div>
+        </div>
+        <div class = "d-flex justify-content-center">
+          <button class="btn btn-primary mb-2 searchbtn" @click="searchNews">Search</button>
+        </div>
+        <div class="news__list d-flex align-content-start justify-content-center flex-wrap">
           <!-- <news-item v-for="news in news_items"> {{ news.name}}</news-item> -->
           <!--  <li v-for="article in articles"  class="news__item">{{ article.title }}</li> -->
-          <li  v-for="article in articles" class="news__item">
-            <div>
-              <h1>{{ article.title }}</h1>
-              <img :src="article.urlToImage">
+          <div  v-for="article in articles" class="news__item  article ">
+          <div class = "tstrip  bg-primary border-top"></div>
+            <div class = "container border-bottom border-right border-left">
+              <h5>{{ article.title }}</h5>
+              <div class = "text-center">  
+                <img class= "img-fluid rounded":src="article.urlToImage">
+              </div>
               <p>{{ article.description }}</p>
             </div>
-          </li>
+          </div>
          
-        </ul>
+        </div>
       </div>
   `,
 
   created(){
     let self = this;
-    fetch('https://newsapi.org/v2/top-headlines?country=us&apiKey=396d347383c247d4a61e28f1807751df')
+    fetch('https://newsapi.org/v2/top-headlines?country=us&apiKey=<key>')
     .then(function(response) {
       return response.json();
     }).then(function(data) {
@@ -78,9 +91,23 @@ Vue.component('news-list',{
         {name:'News item 2'},
         {name:'News item 3'}
       ],
-      articles: [] 
+      articles: [],
+      searchTerm: '' 
     }
   },
+
+  methods: {
+    searchNews: function() {
+      let self = this;
+      fetch('https://newsapi.org/v2/everything?q='+self.searchTerm + '&language=en&apiKey=<key>')
+      .then(function(response) {
+        return response.json();
+      }).then(function(data) {
+        console.log(data);
+        self.articles = data.articles;
+      });
+    }
+  } 
 
 });
 
@@ -90,11 +117,30 @@ Vue.component('news-item',{
   `,
 });
 
+const Home = Vue.component('home', {
+  template: `
+        <div class="home">
+        <img src="/static/images/logo.png" alt="VueJS Logo">
+        <h1>{{ welcome }}</h1>
+        </div>
+  `,
+  data(){
+    return {
+      welcome: 'Hello World! Welcome to VueJS'
+    }
+  }
+ });
+
+const router = new VueRouter({
+  mode: 'history',
+  routes: [
+    { path: '/', component: Home },
+    { path: '/news', component: NewsList }
+  ]
+});
 
 let app = new Vue({
     el: '#app',
-    data: {
-        welcome: 'Hello World! Welcome to VueJS'
-    }
+    router
 });
 
